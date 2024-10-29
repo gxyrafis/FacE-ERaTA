@@ -5,7 +5,7 @@ from PIL import Image
 from cv2 import VideoCapture, imwrite
 import PySimpleGUI as psg
 
-from UtilityFunctions import emotionAnalysis
+from UtilityFunctions import emotionAnalysis, checkCamValidity
 
 if __name__ == '__main__':
     picpath = ""
@@ -55,15 +55,19 @@ if __name__ == '__main__':
             window["picsearch"].update(disabled=False)
             window["Submit"].update(disabled=False)
             window["livepic"].update(disabled=False)
+
         elif event == "livepic":
-            cam = VideoCapture(0)
-            result, image = cam.read()
-            cam.release()
-            if result:
-                imwrite("livepic.png", image)
-                picpath = "livepic.png"
+            if checkCamValidity(0):
+                cam = VideoCapture(0)
+                result, image = cam.read()
+                cam.release()
+                if result:
+                    imwrite("livepic.png", image)
+                    picpath = "livepic.png"
+                else:
+                    psg.popup("No image found. Please try again!")
             else:
-                psg.popup("No image found. Please try again!")
+                psg.popup("Error: No camera available.")
         elif event == "picsearch":
             picpath = values["picsearch"]
         elif event == "Submit":

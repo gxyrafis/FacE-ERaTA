@@ -1,3 +1,4 @@
+from cv2 import VideoCapture
 from deepface import DeepFace
 
 
@@ -49,3 +50,10 @@ def emotionAnalysis(picture, emotion, retinaface):
         return ["Success" , accuracy, emotionWordSwitchR(emotion_analysis[0]["dominant_emotion"])]
     else:
         return ["Failure", accuracy, emotionWordSwitchR(emotion_analysis[0]["dominant_emotion"])]
+
+def checkCamValidity(source):
+    cam = VideoCapture(source)
+    if cam is None or not cam.isOpened():
+        cam.release()
+        return False
+    return True
