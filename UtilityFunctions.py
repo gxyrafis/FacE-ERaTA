@@ -1,5 +1,7 @@
+import pandas as pd
 from cv2 import VideoCapture
 from deepface import DeepFace
+import plotly.express as px
 
 
 def emotionWordSwitch(emotion):
@@ -46,14 +48,33 @@ def emotionAnalysis(picture, emotion, retinaface):
         detector_backend=mode,
     )
     accuracy = emotion_analysis[0]["emotion"][emotion]
+    fig = makeStarChart(emotion_analysis[0])
     if emotion_analysis[0]["dominant_emotion"] == emotion:
-        return ["Success" , accuracy, emotionWordSwitchR(emotion_analysis[0]["dominant_emotion"])]
+        return ["Success" , accuracy, emotionWordSwitchR(emotion_analysis[0]["dominant_emotion"]), fig]
     else:
-        return ["Failure", accuracy, emotionWordSwitchR(emotion_analysis[0]["dominant_emotion"])]
+        return ["Failure", accuracy, emotionWordSwitchR(emotion_analysis[0]["dominant_emotion"]), fig]
 
 def checkCamValidity(source):
     cam = VideoCapture(source)
     if cam is None or not cam.isOpened():
         cam.release()
         return False
+    cam.release()
     return True
+
+def makeStarChart(emotion_analysis):
+    anger_percentage = emotion_analysis["emotion"]["angry"]
+    sadness_percentage = emotion_analysis["emotion"]["sad"]
+    disgust_percentage = emotion_analysis["emotion"]["disgust"]
+    fear_percentage = emotion_analysis["emotion"]["fear"]
+    happiness_percentage = emotion_analysis["emotion"]["happy"]
+    surprise_percentage = emotion_analysis["emotion"]["surprise"]
+    neutral_percentage = emotion_analysis["emotion"]["neutral"]
+
+    df = pd.DataFrame(dict(
+        r = [happiness_percentage, anger_percentage, sadness_percentage, fear_percentage, surprise_percentage, disgust_percentage, neutral_percentage],
+        theta= ["Happiness", "Anger", "Sadness", "Fear", "Surprise", "Disgust", "Neutral"]
+    ))
+    fig = px.line_polar(df, r='r', theta='theta', line_close=True)
+    fig.update_traces(fill='toself')
+    return fig

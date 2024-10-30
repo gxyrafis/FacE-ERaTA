@@ -4,6 +4,7 @@ import random
 from PIL import Image
 from cv2 import VideoCapture, imwrite
 import PySimpleGUI as psg
+import plotly.express as px
 
 from UtilityFunctions import emotionAnalysis, checkCamValidity
 
@@ -25,6 +26,7 @@ if __name__ == '__main__':
     back = psg.Button(button_text="Back", key="BACKRESULTS",font=("Arial", 16, "bold"))
     result_text = psg.Text("", key="resulttext", font=("Arial", 25, "bold"), pad=30)
     photo = psg.Image("", key="testphoto", pad=20)
+    chart = psg.Image("", key="chart", pad = 20)
     accuracy = psg.Text("", key="accuracy", font=("Arial", 15, "bold"), pad=20)
     # All the stuff inside your window.
     layoutintro = [[welcome_text],
@@ -37,12 +39,15 @@ if __name__ == '__main__':
 
     layoutresult = [[back],
                     [psg.Push(), result_text, psg.Push()],
-                    [psg.Push(), photo, psg.Push()],
+                    [psg.Push(), photo, chart, psg.Push()],
                     [psg.Push(), accuracy, psg.Push()]
     ]
     layoutmain = [[psg.Column(layoutintro, key="-INTRO-", element_justification="c"), psg.Column(layoutresult, key="-RESULT-", visible=False)]]
     # Create the Window
-    window = psg.Window('FacE-ERaTA DEMO', layoutmain, element_justification="c") #size=(700, 500)
+    window = psg.Window('FacE-ERaTA DEMO', layoutmain, element_justification="c") #size=(700, 500)\
+
+    cam = VideoCapture(0)
+    livecamvalidity = checkCamValidity(0)
 
     # Event Loop to process "events" and get the "values" of the inputs
     while True:
@@ -57,10 +62,18 @@ if __name__ == '__main__':
             window["livepic"].update(disabled=False)
 
         elif event == "livepic":
-            if checkCamValidity(0):
-                cam = VideoCapture(0)
+            if livecamvalidity:
                 result, image = cam.read()
-                cam.release()
+                #cam.release()
+                #livecamvalidity = not livecamvalidity
+                if result:
+                    imwrite("livepic.png", image)
+                    picpath = "livepic.png"
+                else:
+                    psg.popup("No image found. Please try again!")
+            elif checkCamValidity(0):
+                result, image = cam.read()
+                #cam.release()
                 if result:
                     imwrite("livepic.png", image)
                     picpath = "livepic.png"
@@ -80,8 +93,14 @@ if __name__ == '__main__':
                 psg.popup_timed("OpenCV was unable to spot a face in the picture. Switching to RetinaFace, this might take a moment.",auto_close_duration=7, button_type= 5, non_blocking=True, auto_close=True)
                 analysis_results = emotionAnalysis(picpath, emotion, True)
 
+            analysis_results[3].write_image("starchart.png")
+            size = 500, 500
+            chart = Image.open("starchart.png") #Convert image into 500x500
+            chart.thumbnail(size, Image.Resampling.LANCZOS)
+            chart.save("starchart.png")
+            window["chart"].update("starchart.png")
+
             im = Image.open(picpath)
-            size = 500,500
             im.thumbnail(size, Image.Resampling.LANCZOS)
             new_image_path = picpath
             if ".jpg" in picpath.lower() or ".jpeg" in picpath.lower():
