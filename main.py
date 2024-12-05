@@ -33,7 +33,7 @@ if __name__ == '__main__':
     randomtxt = psg.Text("Random Emotion Portrayal Challenge!", font=("Arial", 20, "bold"))
     randomrules = psg.Text("In this gamemode, the app will request that you portray a random emotion of its choice!\n Do your best to portray it and either"
                            " upload an existing pic or take one live using the respective buttons. The AI will then do its best to rate your portrayal "
-                           "and issue its verdict!", font=("Arial Bold", 14), size=(90, None), justification="center")
+                           "and issue its verdict!", font=("Arial Bold", 14), size=(90, None), justification="center", pad=((0,0),(0,20)))
     emotion_picker_button = psg.Button(button_text="New emotion", key="EPB", font=("Arial", 15, "bold"), pad=30)
     emotion_text = psg.Text("", key="emotion", font=("Arial", 20, "bold"))
     pic_search = psg.FileBrowse(key="picsearch", pad=30, button_text="Upload Picture", font=("Arial", 16, "bold"), disabled=True, target="picsearch", enable_events=True)
@@ -104,8 +104,12 @@ if __name__ == '__main__':
         #BACK FROM RANDOM TO INTRO
         elif event == "BACKRANDOM":
             windowkey = "-INTRO-"
+            window["emotion"].update("")
             window["-INTRO-"].update(visible=True)
             window["-RANDOMWIN-"].update(visible=False)
+            window["picsearch"].update(disabled=True)
+            window["Submit"].update(disabled=True)
+            window["livepic"].update(disabled=True)
 
         #TAKE LIVE PIC
         elif event == "livepic":
