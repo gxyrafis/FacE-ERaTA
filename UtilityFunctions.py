@@ -41,12 +41,15 @@ def emotionAnalysis(picture, emotion, retinaface):
     mode = "opencv"
     if retinaface == True:
         mode = "retinaface"
-    emotion = emotionWordSwitch(emotion)
     emotion_analysis = DeepFace.analyze(
         img_path=picture,
         actions=['emotion'],
         detector_backend=mode,
     )
+    if emotion == "T":
+        emotion = emotion_analysis[0]["dominant_emotion"]
+    else:
+        emotion = emotionWordSwitch(emotion)
     accuracy = emotion_analysis[0]["emotion"][emotion]
     fig = makeStarChart(emotion_analysis[0])
     if emotion_analysis[0]["dominant_emotion"] == emotion:

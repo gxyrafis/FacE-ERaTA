@@ -11,6 +11,7 @@ from UtilityFunctions import emotionAnalysis, checkCamValidity
 if __name__ == '__main__':
     picpath = ""
     windowkey = "-INTRO-"
+    isTraining = False
     # Intro Layout
     emotions = ["Anger", "Sadness", "Disgust", "Happiness", "Fear", "Surprise"]
     welcome_text = psg.Text("Welcome to FacE-ERaTA", font=("Arial", 20, "bold"))
@@ -40,6 +41,18 @@ if __name__ == '__main__':
     take_pic = psg.Button(button_text="Take a Picture", key="livepic", font=("Arial", 16, "bold"), disabled=True)
     submit = psg.Button(button_text="Submit", key="Submit",font=("Arial", 16, "bold"), disabled=True)
 
+    #Training layout
+    backtraining = psg.Button(button_text="Back", key="BACKTRAINING", font=("Arial", 16, "bold"))
+    trainingtxt = psg.Text("Training Mode", font=("Arial", 20, "bold"))
+    traininginfo = psg.Text("Welcome to the training mode! In this mode, the app will not request an emotion at all."
+                            " Instead, you are free to take any expression that you like and either take a picture using your webcam"
+                            " or upload existing ones. The AI classifier will then take this pictures and tell you what emotion it thought "
+                            "you were trying to display and what the accuracy was.", font=("Arial Bold", 14), size=(90, None), justification="center", pad=((0,0),(0,20)))
+    pic_search_training = psg.FileBrowse(key="picsearchT", pad=30, button_text="Upload Picture", font=("Arial", 16, "bold"),
+                                target="picsearchT", enable_events=True)
+    take_pic_training = psg.Button(button_text="Take a Picture", key="livepicT", font=("Arial", 16, "bold"))
+    submit_training = psg.Button(button_text="Submit", key="SubmitT", font=("Arial", 16, "bold"))
+
     #ResultLayout
     back = psg.Button(button_text="Back", key="BACKRESULTS",font=("Arial", 16, "bold"))
     result_text = psg.Text("", key="resulttext", font=("Arial", 25, "bold"), pad=30)
@@ -66,13 +79,21 @@ if __name__ == '__main__':
                   [pic_search,take_pic, psg.Push(),submit]
     ]
 
+    layouttraining = [[backtraining,psg.Push()],
+                      [trainingtxt],
+                      [psg.HorizontalSeparator(pad=10)],
+                      [traininginfo],
+                      [pic_search_training, take_pic_training, psg.Push(), submit_training]
+    ]
+
     layoutresult = [[back],
                     [psg.Push(), result_text, psg.Push()],
                     [psg.Push(), photo, chart, psg.Push()],
                     [psg.Push(), accuracy, psg.Push()]
     ]
     layoutmain = [[psg.Column(layoutintro, key="-INTRO-", element_justification="c"), psg.Column(layoutresult, key="-RESULT-", visible=False),
-                   psg.Column(layoutrandom, key="-RANDOMWIN-", visible=False, element_justification="c")]]
+                   psg.Column(layoutrandom, key="-RANDOMWIN-", visible=False, element_justification="c"), psg.Column(layouttraining, key="-TRAININGWIN-", visible=False, element_justification="c")]
+                  ]
     # Create the Window
     window = psg.Window('FacE-ERaTA DEMO', layoutmain, element_justification="c") #size=(700, 500)\
 
@@ -89,6 +110,7 @@ if __name__ == '__main__':
 
         #RANDOM GAME MODE CHOSEN
         elif event == "--RANDOMGM--":
+            isTraining = False
             windowkey="-RANDOMWIN-"
             window["-INTRO-"].update(visible=False)
             window["-RANDOMWIN-"].update(visible=True)
@@ -101,6 +123,13 @@ if __name__ == '__main__':
             window["Submit"].update(disabled=False)
             window["livepic"].update(disabled=False)
 
+        #TRAINING MODE ACTIVATED
+        elif event == "--TRAINGM--":
+            windowkey = "-TRAININGWIN-"
+            isTraining = True
+            window["-INTRO-"].update(visible=False)
+            window["-TRAININGWIN-"].update(visible=True)
+
         #BACK FROM RANDOM TO INTRO
         elif event == "BACKRANDOM":
             windowkey = "-INTRO-"
@@ -111,8 +140,15 @@ if __name__ == '__main__':
             window["Submit"].update(disabled=True)
             window["livepic"].update(disabled=True)
 
-        #TAKE LIVE PIC
-        elif event == "livepic":
+        #BACK FROM TRAINING TO INTRO
+        elif event == "BACKTRAINING":
+            windowkey = "-INTRO-"
+            window["emotion"].update("")
+            window["-INTRO-"].update(visible=True)
+            window["-TRAININGWIN-"].update(visible=False)
+
+        #TAKE LIVE PIC REGARDLESS OF MODE
+        elif event == "livepic" or event == "livepicT":
             if livecamvalidity:
                 result, image = cam.read()
                 #cam.release()
@@ -137,11 +173,16 @@ if __name__ == '__main__':
         elif event == "picsearch":
             picpath = values["picsearch"]
 
+        elif event == "picsearchT":
+            picpath = values["picsearchT"]
+
         #SUBMIT PIC TO AI FOR RESULTS
-        elif event == "Submit":
+        elif event == "Submit" or event == "SubmitT":
             if picpath == "":
                 psg.popup("Error: No image selected.")
                 continue
+            if isTraining:
+                emotion = "T"
             try:
                 analysis_results = emotionAnalysis(picpath, emotion, False)
             except:
@@ -170,7 +211,15 @@ if __name__ == '__main__':
                 window["resulttext"].update("Oh no :(", text_color="red")
                 window["accuracy"].update("You have only achieved an accuracy of " + str(round(analysis_results[1],2)) +
                                           "% at displaying " + emotion + ". Our AI thought you were displaying " + analysis_results[2] + " instead.")
-            window["-RANDOMWIN-"].update(visible=False)
+            if windowkey == "-RANDOMWIN-":
+                window["-RANDOMWIN-"].update(visible=False)
+
+            elif windowkey == "-TRAININGWIN-":
+                window["-TRAININGWIN-"].update(visible=False)
+                window["resulttext"].update("")
+                window["accuracy"].update("Our AI thought you were displaying " + analysis_results[
+                        2] + " with an accuracy of " + str(round(analysis_results[1], 2)) + "%")
+
             window["-RESULT-"].update(visible=True)
 
         #RETURN FROM RESULTS TO PREV WINDOW
