@@ -2,6 +2,7 @@
 import os
 import random
 from PIL import Image
+from PySimpleGUI import Print
 from cv2 import VideoCapture, imwrite
 import PySimpleGUI as psg
 import plotly.express as px
@@ -13,7 +14,7 @@ if __name__ == '__main__':
     windowkey = "-INTRO-"
     isTraining = False
     # Intro Layout
-    emotions = ["Anger", "Sadness", "Disgust", "Happiness", "Fear", "Surprise"]
+    emotions = ['Anger', 'Sadness', 'Disgust', 'Happiness', 'Fear', 'Surprise']
     welcome_text = psg.Text("Welcome to FacE-ERaTA", font=("Arial", 20, "bold"))
     context = psg.Text("FacE-ERaTA stands for Facial Emotion Expressiveness Rating for Theatrical Actors.\n"
                             "It is an app designed to help actors perfect their portrayal of emotions "
@@ -26,8 +27,18 @@ if __name__ == '__main__':
     choose_emotion_btn = psg.Button(button_text="User Picked Emotion", key="--CHOOSEGM--", font=("Arial", 15, "bold"), pad=30)
     train_btn = psg.Button(button_text="Training", key="--TRAINGM--", font=("Arial", 15, "bold"), pad=30)
 
-
-
+    #User picked emotion layout
+    backuserp = psg.Button(button_text="Back", key = "BACKUSERP", font=("Arial", 16, "bold"))
+    userptext = psg.Text("User chosen emotion portrayal.", font=("Arial", 20, "bold"))
+    userprules = psg.Text("In this gamemode you are allowed to try and portray an emotion of your choice. "
+                          "Select an emotion to portray down below and then either upload a picture or take a picture live "
+                          "where you express said emotion. The AI judge will then rate your attempt once you press 'Submit'.", font=("Arial Bold", 14), size=(90, None), justification="center", pad=((0,0),(0,20)))
+    emotion_text_userp = psg.Text("", key="emotionU", font=("Arial", 20, "bold"))
+    emotion_picker_button_userp = psg.Combo(emotions, key="EPBU", font=("Arial", 15, "bold"), pad=30, enable_events=True)
+    pic_search_userp = psg.FileBrowse(key="picsearchU", pad=30, button_text="Upload Picture", font=("Arial", 16, "bold"),
+                                target="picsearchU", enable_events=True, disabled=True)
+    take_pic_userp = psg.Button(button_text="Take a Picture", key="livepicU", font=("Arial", 16, "bold"), disabled=True)
+    submit_userp = psg.Button(button_text="Submit", key="SubmitU", font=("Arial", 16, "bold"), disabled=True)
 
     #Random emotion layout
     backrandom = psg.Button(button_text="Back", key="BACKRANDOM",font=("Arial", 16, "bold"))
@@ -79,6 +90,14 @@ if __name__ == '__main__':
                   [pic_search,take_pic, psg.Push(),submit]
     ]
 
+    layoutuserp = [[backuserp, psg.Push()],
+                   [userptext],
+                   [psg.HorizontalSeparator(pad=10)],
+                   [userprules],
+                   [emotion_picker_button_userp],
+                   [pic_search_userp, take_pic_userp, psg.Push(), submit_userp]
+    ]
+
     layouttraining = [[backtraining,psg.Push()],
                       [trainingtxt],
                       [psg.HorizontalSeparator(pad=10)],
@@ -92,7 +111,8 @@ if __name__ == '__main__':
                     [psg.Push(), accuracy, psg.Push()]
     ]
     layoutmain = [[psg.Column(layoutintro, key="-INTRO-", element_justification="c"), psg.Column(layoutresult, key="-RESULT-", visible=False),
-                   psg.Column(layoutrandom, key="-RANDOMWIN-", visible=False, element_justification="c"), psg.Column(layouttraining, key="-TRAININGWIN-", visible=False, element_justification="c")]
+                   psg.Column(layoutrandom, key="-RANDOMWIN-", visible=False, element_justification="c"), psg.Column(layouttraining, key="-TRAININGWIN-", visible=False, element_justification="c"),
+                   psg.Column(layoutuserp, key="-USERPWIN-", visible=False, element_justification="c")]
                   ]
     # Create the Window
     window = psg.Window('FacE-ERaTA DEMO', layoutmain, element_justification="c") #size=(700, 500)\
@@ -115,6 +135,19 @@ if __name__ == '__main__':
             window["-INTRO-"].update(visible=False)
             window["-RANDOMWIN-"].update(visible=True)
 
+        elif event == "--CHOOSEGM--":
+            isTraining = False
+            windowkey = "-USERPWIN-"
+            window["-INTRO-"].update(visible=False)
+            window["-USERPWIN-"].update(visible=True)
+
+        # TRAINING MODE ACTIVATED
+        elif event == "--TRAINGM--":
+            windowkey = "-TRAININGWIN-"
+            isTraining = True
+            window["-INTRO-"].update(visible=False)
+            window["-TRAININGWIN-"].update(visible=True)
+
         #EMOTION PICKER BUTTON CLICKED
         elif event == "EPB":
             emotion = random.choice(emotions)
@@ -123,12 +156,12 @@ if __name__ == '__main__':
             window["Submit"].update(disabled=False)
             window["livepic"].update(disabled=False)
 
-        #TRAINING MODE ACTIVATED
-        elif event == "--TRAINGM--":
-            windowkey = "-TRAININGWIN-"
-            isTraining = True
-            window["-INTRO-"].update(visible=False)
-            window["-TRAININGWIN-"].update(visible=True)
+        #EMOTION PICKER COMBO
+        elif event == "EPBU":
+            emotion = values["EPBU"]
+            window["picsearchU"].update(disabled=False)
+            window["SubmitU"].update(disabled=False)
+            window["livepicU"].update(disabled=False)
 
         #BACK FROM RANDOM TO INTRO
         elif event == "BACKRANDOM":
@@ -140,6 +173,15 @@ if __name__ == '__main__':
             window["Submit"].update(disabled=True)
             window["livepic"].update(disabled=True)
 
+        #BACK FROM USER PICKED TO INTRO
+        elif event == "BACKUSERP":
+            windowkey = "-INTRO-"
+            window["-INTRO-"].update(visible=True)
+            window["-USERPWIN-"].update(visible=False)
+            window["picsearchU"].update(disabled=True)
+            window["SubmitU"].update(disabled=True)
+            window["livepicU"].update(disabled=True)
+
         #BACK FROM TRAINING TO INTRO
         elif event == "BACKTRAINING":
             windowkey = "-INTRO-"
@@ -148,7 +190,7 @@ if __name__ == '__main__':
             window["-TRAININGWIN-"].update(visible=False)
 
         #TAKE LIVE PIC REGARDLESS OF MODE
-        elif event == "livepic" or event == "livepicT":
+        elif event == "livepic" or event == "livepicT" or event == "livepicU":
             if livecamvalidity:
                 result, image = cam.read()
                 #cam.release()
@@ -176,8 +218,11 @@ if __name__ == '__main__':
         elif event == "picsearchT":
             picpath = values["picsearchT"]
 
+        elif event == "picsearchU":
+            picpath = values["picsearchU"]
+
         #SUBMIT PIC TO AI FOR RESULTS
-        elif event == "Submit" or event == "SubmitT":
+        elif event == "Submit" or event == "SubmitT" or event == "SubmitU":
             if picpath == "":
                 psg.popup("Error: No image selected.")
                 continue
@@ -213,7 +258,8 @@ if __name__ == '__main__':
                                           "% at displaying " + emotion + ". Our AI thought you were displaying " + analysis_results[2] + " instead.")
             if windowkey == "-RANDOMWIN-":
                 window["-RANDOMWIN-"].update(visible=False)
-
+            elif windowkey == "-USERPWIN-":
+                window["-USERPWIN-"].update(visible = False)
             elif windowkey == "-TRAININGWIN-":
                 window["-TRAININGWIN-"].update(visible=False)
                 window["resulttext"].update("")
