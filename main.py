@@ -36,7 +36,7 @@ if __name__ == '__main__':
     emotion_text_userp = psg.Text("", key="emotionU", font=("Arial", 20, "bold"))
     emotion_picker_button_userp = psg.Combo(emotions, key="EPBU", font=("Arial", 15, "bold"), pad=30, enable_events=True)
     pic_search_userp = psg.FileBrowse(key="picsearchU", pad=30, button_text="Upload Picture", font=("Arial", 16, "bold"),
-                                target="picsearchU", enable_events=True, disabled=True)
+                                target="picsearchU", enable_events=True, disabled=True, file_types=(("Images", "*.png;*.jpg;*.jpeg"),))
     take_pic_userp = psg.Button(button_text="Take a Picture", key="livepicU", font=("Arial", 16, "bold"), disabled=True)
     submit_userp = psg.Button(button_text="Submit", key="SubmitU", font=("Arial", 16, "bold"), disabled=True)
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
                            "and issue its verdict!", font=("Arial Bold", 14), size=(90, None), justification="center", pad=((0,0),(0,20)))
     emotion_picker_button = psg.Button(button_text="New emotion", key="EPB", font=("Arial", 15, "bold"), pad=30)
     emotion_text = psg.Text("", key="emotion", font=("Arial", 20, "bold"))
-    pic_search = psg.FileBrowse(key="picsearch", pad=30, button_text="Upload Picture", font=("Arial", 16, "bold"), disabled=True, target="picsearch", enable_events=True)
+    pic_search = psg.FileBrowse(key="picsearch", pad=30, button_text="Upload Picture", file_types=(("Images", "*.png;*.jpg;*.jpeg"),), font=("Arial", 16, "bold"), disabled=True, target="picsearch", enable_events=True)
     take_pic = psg.Button(button_text="Take a Picture", key="livepic", font=("Arial", 16, "bold"), disabled=True)
     submit = psg.Button(button_text="Submit", key="Submit",font=("Arial", 16, "bold"), disabled=True)
 
@@ -60,7 +60,7 @@ if __name__ == '__main__':
                             " or upload existing ones. The AI classifier will then take this pictures and tell you what emotion it thought "
                             "you were trying to display and what the accuracy was.", font=("Arial Bold", 14), size=(90, None), justification="center", pad=((0,0),(0,20)))
     pic_search_training = psg.FileBrowse(key="picsearchT", pad=30, button_text="Upload Picture", font=("Arial", 16, "bold"),
-                                target="picsearchT", enable_events=True)
+                                target="picsearchT", file_types=(("Images", "*.png;*.jpg;*.jpeg"),), enable_events=True)
     take_pic_training = psg.Button(button_text="Take a Picture", key="livepicT", font=("Arial", 16, "bold"))
     submit_training = psg.Button(button_text="Submit", key="SubmitT", font=("Arial", 16, "bold"))
 
