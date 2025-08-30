@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     #User picked emotion layout
     backuserp = psg.Button(button_text="Back", key = "BACKUSERP", font=("Arial", 16, "bold"))
-    userptext = psg.Text("User chosen emotion portrayal.", font=("Arial", 20, "bold"))
+    userptext = psg.Text("User Picked Emotion Portrayal Challenge!", font=("Arial", 20, "bold"))
     userprules = psg.Text("In this gamemode you are allowed to try and portray an emotion of your choice. "
                           "Select an emotion to portray down below and then either upload a picture or take a picture live "
                           "where you express said emotion. The AI judge will then rate your attempt once you press 'Submit'.", font=("Arial Bold", 14), size=(90, None), justification="center", pad=((0,0),(0,20)))
