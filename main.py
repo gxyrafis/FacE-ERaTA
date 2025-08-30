@@ -2,9 +2,9 @@
 import os
 import random
 from PIL import Image
-from PySimpleGUI import Print
+from FreeSimpleGUI import Print
 from cv2 import VideoCapture, imwrite
-import PySimpleGUI as psg
+import FreeSimpleGUI as psg
 import plotly.express as px
 
 from UtilityFunctions import emotionAnalysis, checkCamValidity
@@ -231,8 +231,12 @@ if __name__ == '__main__':
             try:
                 analysis_results = emotionAnalysis(picpath, emotion, False)
             except:
-                psg.popup_timed("OpenCV was unable to spot a face in the picture. Switching to RetinaFace, this might take a moment.",auto_close_duration=7, button_type= 5, non_blocking=True, auto_close=True)
-                analysis_results = emotionAnalysis(picpath, emotion, True)
+                try:
+                    psg.popup_timed("OpenCV was unable to spot a face in the picture. Switching to RetinaFace, this might take a moment.",auto_close_duration=7, button_type= 5, non_blocking=True, auto_close=True)
+                    analysis_results = emotionAnalysis(picpath, emotion, True)
+                except:
+                    psg.popup("RetinaFace was also unable to spot a face in the picture. Please use a picture containing a face.")
+                    continue
 
             analysis_results[3].write_image("starchart.png")
             size = 500, 500
@@ -274,6 +278,7 @@ if __name__ == '__main__':
                 os.remove(new_image_path)
             window["-RESULT-"].update(visible=False)
             window[windowkey].update(visible=True)
+
 
 
     window.close()
